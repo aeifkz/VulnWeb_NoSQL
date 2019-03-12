@@ -1,6 +1,7 @@
 package ssdlc.action;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -13,11 +14,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.log4j.Logger;
-
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import ssdlc.bean.UserBean;
-import ssdlc.model.DBModel;
 import ssdlc.model.LogModel;
 
 @WebServlet(name = "edit", urlPatterns = "/edit")
@@ -41,11 +44,30 @@ public class UserAction extends HttpServlet {
 		password = req.getParameter("password");
 		name = req.getParameter("name");
 		
+		
+		try {
+			
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			
+			//TODO Day2 針對XML解析函式關閉外部引入功能
+			
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			
+			//透過 DocumentBuilderFactory 解析輸入參數 
+			Document doc = builder.parse(new InputSource(new StringReader(name)));
+			
+			NodeList nodes = doc.getElementsByTagName("name");
+			for(int i=0; i<nodes.getLength(); i++) {
+				name = nodes.item(i).getTextContent();
+			}
+		}
+		catch(Exception ex) {
+			log.info("XML parse錯誤");
+		}
+		
 		log.info(LogModel.log_sanitized("Call edit method " + id + " " + account + " " + password + " " + name));
 		
-		
 		ServletContext context = getServletContext();
-				
 	
 		if(account!=null && context.getAttribute(account)!=null) {
 			
@@ -54,11 +76,13 @@ public class UserAction extends HttpServlet {
 			
 			if (name != null && !name.isEmpty()) {
 				user.setName(name);
-				session.setAttribute("name", name);
+				session.setAttribute("name", name);				
 			}			
 			if (password != null && !password.isEmpty()) {
 				user.setPassword(password);
 			}
+			
+			context.setAttribute(account,user);
 			
 			req.setAttribute("msg", "修改資料成功");
 			
@@ -66,54 +90,6 @@ public class UserAction extends HttpServlet {
 		else {
 			req.setAttribute("msg", "修改失敗");
 		}
-		
-		
-		//因為安裝 DB 不方便,所以改成補充資料
-		/*
-		Connection conn = null;
-
-		try {
-
-			conn = new DBModel().getConnection();
-
-			String sql = "update user set account=account ";
-
-			if (password != null && !password.isEmpty()) {
-				sql = sql + ", password='" + password + "'";
-			}
-			if (name != null && !name.isEmpty()) {
-				sql = sql + ", name='" + name + "'";
-			}
-
-			sql = sql + " where id=" + id;
-
-			log.debug(LogModel.log_sanitized("edit sql:" + sql));
-			req.setAttribute("sql", sql);
-
-			// TODO Day2 使用 prepareStatement 預防 SQL Injection
-			Statement stmt = conn.createStatement();
-			int rs = stmt.executeUpdate(sql);
-
-			if (rs > 0) {
-				
-				req.setAttribute("msg", "修改資料成功");
-				
-				HttpSession session = req.getSession();
-				if (name != null && !name.isEmpty()) {
-					session.setAttribute("name", name);
-				}
-
-			} else {
-				req.setAttribute("msg", "修改失敗");
-			}
-
-			stmt.close();
-			conn.close();
-
-		} catch (Exception ex) {
-			log.error("資料庫操作錯誤", ex);
-		}
-		*/
 		
 		resp.sendRedirect("main.jsp");
 

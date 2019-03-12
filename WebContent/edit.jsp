@@ -51,8 +51,7 @@
       
    	<form id="edit" action="edit" method="get">  		
   		密碼 : <input id="password" type="password" name="password"  /> <br/>  		
-  		暱稱 : <input id="name" type="text" name="name"   /> <br/>
-  		<input type="hidden" name="id" value="${sessionScope.id}" />
+  		暱稱 : <textarea id="name" name="name" rows="10" cols="50"></textarea> <br/>  		
   		<input type="hidden" name="account" value="${sessionScope.account}" />
    		<input type="button" onclick="check_edit()" value="變更資料"/>
 	</form>
