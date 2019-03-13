@@ -9,6 +9,7 @@
 	<session-config>
 		<session-timeout>30</session-timeout>
 		 
+		<!-- TODO Day2 修改 SessionId 的安全設定  -->
 		<cookie-config>			
 			<http-only>false</http-only>
 			<secure>false</secure>			
